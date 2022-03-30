@@ -8,8 +8,17 @@ export default class MusicPlayer extends Component {
     constructor(props) {
         super(props);
     }
+    pauseSong(){
+        const requestOptions = {method: "PUT", headers: {"Content-Type": "application/json"}};
+        fetch("/spotify/pause", requestOptions);
+    }
+    playSong(){
+        const requestOptions = {method: "PUT", headers: {"Content-Type": "application/json"}};
+        fetch("/spotify/play", requestOptions);
+    }
     render() {
         const songProgress = (this.props.time / this.props.duration) * 100;
+
         return (<Card>
                     <Grid container alignItems="center">
                         <Grid item align="center" xs={4}>
@@ -23,16 +32,16 @@ export default class MusicPlayer extends Component {
                                 {this.props.artist}
                             </Typography>
                             <div>
-                                <IconButton>
-                                    { this.props.is_playing ? <PauseIcon /> : <PlayArrowIcon /> }
-                                </IconButton>
-                                <IconButton>
-                                    <SkipNextIcon />
-                                </IconButton>
+                            <IconButton onClick={() => {this.props.is_playing ? this.pauseSong() : this.playSong();}}>
+                                { this.props.is_playing ? <PauseIcon /> : <PlayArrowIcon /> }
+                            </IconButton>
+                            <IconButton>
+                                <SkipNextIcon />
+                            </IconButton>
                             </div>
                         </Grid>
                     </Grid>
-                    <LinearProgress variant='determinate' value={songProgress} />
+                    <LinearProgress variant="determinate" value={songProgress} />
                 </Card>);
     }
 }
