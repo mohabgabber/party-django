@@ -9,14 +9,16 @@ export default class Room extends Component {
             guestCanPause: false,
             isHost: false,
             showSettings: false,
+            spotifyAuthenticated: false,
         };
         this.roomCode = this.props.match.params.roomCode;
-        this.getRoomDetails();
         this.leaveButtonPressed = this.leaveButtonPressed.bind(this);
         this.updateShowSettings = this.updateShowSettings.bind(this);
         this.renderSettingsButton = this.renderSettingsButton.bind(this);
         this.renderSettings = this.renderSettings.bind(this);
         this.getRoomDetails = this.getRoomDetails.bind(this);
+        this.authenticateSpotify = this.authenticateSpotify.bind(this);
+        this.getRoomDetails();
     }
     getRoomDetails() {
         fetch('/api/get-room' + '?code=' + this.roomCode).then((response) => {
@@ -24,8 +26,10 @@ export default class Room extends Component {
                 this.props.leaveRoomCallback();
                 this.props.history.push('/');
             }
-            return response.json();}).then((data) => {this.setState({votesToSkip: data.votes_to_skip, guestCanPause: data.guest_can_pause, isHost: data.is_host})
-        })
+            return response.json();}).then((data) => {this.setState({votesToSkip: data.votes_to_skip, guestCanPause: data.guest_can_pause, isHost: data.is_host}); 
+            if (this.state.isHost) {
+            this.authenticateSpotify()
+        }})
     }
     leaveButtonPressed() {
         const requestOptions = {
@@ -60,6 +64,16 @@ export default class Room extends Component {
             </Grid>
         </Grid>
         );
+    }
+    authenticateSpotify() {
+        fetch("/spotify/is-authenticated").then((response) => response.json()).then((data) => {
+            this.setState({spotifyAuthenticated: data.status});
+            if (!data.status) {
+                fetch("/spotify/get-auth-url").then((response) => response.json()).then((data) => {
+                    window.location.replace(data.url);
+                })
+            }
+        })
     }
     render() {
         if (this.state.showSettings){
